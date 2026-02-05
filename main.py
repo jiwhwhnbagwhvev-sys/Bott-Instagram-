@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 # ============================================================
-#  MAIN APPLICATION
-# ============================================================
-#  File       : main.py
-#  Deskripsi  : Entry point aplikasi terminal (BOTT)
+#  MAIN APPLICATION — BOTT
 # ============================================================
 
 import sys
@@ -11,13 +8,13 @@ import time
 import os
 
 # =======================
-# IMPORT INTERNAL MODULE
+# IMPORT DARI module/
 # =======================
 try:
-    import config
-    from login import login
-    from menu import menu
-    from otp_telegram import send_and_verify_otp
+    from module import config
+    from module.login import login
+    from module.menu import menu
+    from module.otp_telegram import send_and_verify_otp
 except ImportError as e:
     print("⛔ Gagal import module :", e)
     sys.exit(1)
@@ -69,11 +66,11 @@ def exit_app():
 def main():
     show_logo()
 
-    # ---------- LOGIN ----------
+    # LOGIN
     if login() is not True:
         exit_app()
 
-    # ---------- MENU LOOP ----------
+    # MENU LOOP
     while True:
         try:
             pilihan = menu()
@@ -96,7 +93,7 @@ def main():
             try:
                 result = send_and_verify_otp(nomor)
             except Exception as e:
-                print(config.COLOR_RED + "❌ Error OTP :" + str(e) + config.COLOR_RESET)
+                print(config.COLOR_RED + "❌ Error OTP : " + str(e) + config.COLOR_RESET)
                 time.sleep(1.5)
                 continue
 
@@ -112,7 +109,6 @@ def main():
         elif pilihan == "0":
             exit_app()
 
-        # MENU LAIN
         else:
             print(config.COLOR_YELLOW + "⚠ Menu belum tersedia" + config.COLOR_RESET)
             time.sleep(1)
