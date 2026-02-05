@@ -1,139 +1,125 @@
+#!/usr/bin/env python3
 # ============================================================
 #  MAIN APPLICATION
 # ============================================================
 #  File       : main.py
-#  Deskripsi  : Entry point aplikasi terminal
-#               Menghubungkan:
-#               - Login system
-#               - Menu utama
-#               - OTP Telegram
-#
-#  Struktur :
-#  config.py        -> Konfigurasi pusat
-#  login.py         -> Sistem login + logo
-#  menu.py          -> Menu utama + logo BOTT
-#  otp_telegram.py  -> OTP Telegram (real)
+#  Deskripsi  : Entry point aplikasi terminal (BOTT)
 # ============================================================
 
 import sys
 import time
 import os
 
-# Import module internal
-import config
-from login import login
-from menu import menu, show_system_info, show_help
-from otp_telegram import send_and_verify_otp
+# =======================
+# IMPORT INTERNAL MODULE
+# =======================
+try:
+    import config
+    from login import login
+    from menu import menu
+    from otp_telegram import send_and_verify_otp
+except ImportError as e:
+    print("⛔ Gagal import module :", e)
+    sys.exit(1)
 
-
-# ============================================================
-#  TERMINAL UTILITY
-# ============================================================
+# =======================
+# TERMINAL UTILITY
+# =======================
 
 def clear_screen():
-    """
-    Membersihkan layar terminal
-    """
-    os.system("clear")
+    os.system("clear" if os.name != "nt" else "cls")
 
+# =======================
+# LOGO
+# =======================
 
-def exit_app():
-    """
-    Keluar dari aplikasi dengan animasi singkat
-    """
+def show_logo():
     clear_screen()
     print(config.COLOR_YELLOW)
-    print("========================================")
-    print("   Terima kasih telah menggunakan")
-    print(f"        {config.APP_NAME}")
-    print("========================================")
+    print("        ██████╗  ██████╗ ████████╗████████╗")
+    print("        ██╔══██╗██╔═══██╗╚══██╔══╝╚══██╔══╝")
+    print("        ██████╔╝██║   ██║   ██║      ██║   ")
+    print("        ██╔══██╗██║   ██║   ██║      ██║   ")
+    print("        ██████╔╝╚██████╔╝   ██║      ██║   ")
+    print("        ╚═════╝  ╚═════╝    ╚═╝      ╚═╝   ")
+    print(config.COLOR_RED + "              B O T T   T E R M I N A L")
+    print(config.COLOR_GREEN + "        Secure • Private • Terminal Based")
+    print(config.COLOR_RESET)
+    time.sleep(1.2)
+
+def exit_app():
+    clear_screen()
+    print(config.COLOR_RED)
+    print("   ██████╗  ██████╗ ████████╗████████╗")
+    print("   ██╔══██╗██╔═══██╗╚══██╔══╝╚══██╔══╝")
+    print("   ██████╔╝██║   ██║   ██║      ██║   ")
+    print("   ██╔══██╗██║   ██║   ██║      ██║   ")
+    print("   ██████╔╝╚██████╔╝   ██║      ██║   ")
+    print("   ╚═════╝  ╚═════╝    ╚═╝      ╚═╝   ")
+    print(config.COLOR_YELLOW + "        Terima kasih telah menggunakan")
+    print(f"              {config.APP_NAME}")
     print(config.COLOR_RESET)
     time.sleep(1.5)
     sys.exit(0)
 
-
-# ============================================================
-#  MAIN FLOW
-# ============================================================
+# =======================
+# MAIN FLOW
+# =======================
 
 def main():
-    """
-    Fungsi utama aplikasi
-    """
-    clear_screen()
+    show_logo()
 
-    # ============================
-    # LOGIN PROCESS
-    # ============================
-    if not login():
-        # Jika login gagal total
+    # ---------- LOGIN ----------
+    if login() is not True:
         exit_app()
 
-    # ============================
-    # MENU LOOP
-    # ============================
+    # ---------- MENU LOOP ----------
     while True:
-        pilihan = menu()
+        try:
+            pilihan = menu()
+        except Exception:
+            print(config.COLOR_RED + "❌ Gagal menampilkan menu" + config.COLOR_RESET)
+            time.sleep(1)
+            continue
 
-        # ----------------------------
-        # MENU 1 : OTP TELEGRAM
-        # ----------------------------
+        # MENU 1 : OTP
         if pilihan == "1":
             clear_screen()
-            print(config.COLOR_CYAN)
-            print("=========== OTP TELEGRAM ===========")
-            print(config.COLOR_RESET)
+            print(config.COLOR_CYAN + "=========== OTP TELEGRAM ===========" + config.COLOR_RESET)
 
             nomor = input("Masukkan Nomor : ").strip()
-
             if not nomor:
-                print()
-                print(config.COLOR_RED + "❌ Nomor tidak boleh kosong")
-                print(config.COLOR_RESET)
+                print(config.COLOR_RED + "❌ Nomor tidak boleh kosong" + config.COLOR_RESET)
                 time.sleep(1.5)
                 continue
 
-            result = send_and_verify_otp(nomor)
+            try:
+                result = send_and_verify_otp(nomor)
+            except Exception as e:
+                print(config.COLOR_RED + "❌ Error OTP :" + str(e) + config.COLOR_RESET)
+                time.sleep(1.5)
+                continue
 
             print()
-            if result:
-                print(config.COLOR_GREEN + "✔ Proses OTP selesai dengan sukses")
+            if result is True:
+                print(config.COLOR_GREEN + "✔ Proses OTP berhasil" + config.COLOR_RESET)
             else:
-                print(config.COLOR_RED + "✖ Proses OTP gagal")
-            print(config.COLOR_RESET)
+                print(config.COLOR_RED + "✖ Proses OTP gagal" + config.COLOR_RESET)
 
             input("\nTekan ENTER untuk kembali ke menu...")
 
-        # ----------------------------
-        # MENU 2 : INFO SISTEM
-        # ----------------------------
-        elif pilihan == "2":
-            show_system_info()
-
-        # ----------------------------
-        # MENU 3 : BANTUAN
-        # ----------------------------
-        elif pilihan == "3":
-            show_help()
-
-        # ----------------------------
         # MENU 0 : KELUAR
-        # ----------------------------
         elif pilihan == "0":
             exit_app()
 
-        # ----------------------------
-        # SAFETY FALLBACK
-        # ----------------------------
+        # MENU LAIN
         else:
-            print(config.COLOR_RED + "❌ Terjadi kesalahan menu")
-            print(config.COLOR_RESET)
+            print(config.COLOR_YELLOW + "⚠ Menu belum tersedia" + config.COLOR_RESET)
             time.sleep(1)
 
-
-# ============================================================
-#  APPLICATION ENTRY POINT
-# ============================================================
+# =======================
+# ENTRY POINT
+# =======================
 
 if __name__ == "__main__":
     try:
@@ -146,7 +132,3 @@ if __name__ == "__main__":
         print("Detail :", e)
         print(config.COLOR_RESET)
         sys.exit(1)
-
-# ============================================================
-#  END OF FILE
-# ============================================================
