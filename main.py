@@ -1,34 +1,36 @@
 #!/usr/bin/env python3
 # ============================================================
-#  MAIN APPLICATION — BOTT
+#  MAIN APPLICATION — BOTT (FIXED)
 # ============================================================
 
 import sys
 import time
 import os
 
-# =======================
-# IMPORT DARI module/
-# =======================
+# ============================================================
+#  FIX IMPORT MODULE (INJECT CONFIG)
+# ============================================================
 try:
-    from module import config
+    from module import config as _config
+    sys.modules["config"] = _config  # 🔥 FIX UTAMA
     from module.login import login
     from module.menu import menu
     from module.otp_telegram import send_and_verify_otp
+    config = _config
 except ImportError as e:
     print("⛔ Gagal import module :", e)
     sys.exit(1)
 
-# =======================
-# TERMINAL UTILITY
-# =======================
+# ============================================================
+#  TERMINAL UTILITY
+# ============================================================
 
 def clear_screen():
     os.system("clear" if os.name != "nt" else "cls")
 
-# =======================
-# LOGO
-# =======================
+# ============================================================
+#  LOGO
+# ============================================================
 
 def show_logo():
     clear_screen()
@@ -59,27 +61,19 @@ def exit_app():
     time.sleep(1.5)
     sys.exit(0)
 
-# =======================
-# MAIN FLOW
-# =======================
+# ============================================================
+#  MAIN FLOW
+# ============================================================
 
 def main():
     show_logo()
 
-    # LOGIN
     if login() is not True:
         exit_app()
 
-    # MENU LOOP
     while True:
-        try:
-            pilihan = menu()
-        except Exception:
-            print(config.COLOR_RED + "❌ Gagal menampilkan menu" + config.COLOR_RESET)
-            time.sleep(1)
-            continue
+        pilihan = menu()
 
-        # MENU 1 : OTP
         if pilihan == "1":
             clear_screen()
             print(config.COLOR_CYAN + "=========== OTP TELEGRAM ===========" + config.COLOR_RESET)
@@ -90,12 +84,7 @@ def main():
                 time.sleep(1.5)
                 continue
 
-            try:
-                result = send_and_verify_otp(nomor)
-            except Exception as e:
-                print(config.COLOR_RED + "❌ Error OTP : " + str(e) + config.COLOR_RESET)
-                time.sleep(1.5)
-                continue
+            result = send_and_verify_otp(nomor)
 
             print()
             if result is True:
@@ -105,17 +94,15 @@ def main():
 
             input("\nTekan ENTER untuk kembali ke menu...")
 
-        # MENU 0 : KELUAR
         elif pilihan == "0":
             exit_app()
-
         else:
             print(config.COLOR_YELLOW + "⚠ Menu belum tersedia" + config.COLOR_RESET)
             time.sleep(1)
 
-# =======================
-# ENTRY POINT
-# =======================
+# ============================================================
+#  ENTRY POINT
+# ============================================================
 
 if __name__ == "__main__":
     try:
